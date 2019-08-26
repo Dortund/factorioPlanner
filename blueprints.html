@@ -1,0 +1,63 @@
+
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Factorio 0.15 blueprints decoder/encoder</title>
+<script src="jQuery-3.4.1.slim.js"></script>
+<script src="pako.js"></script>
+<script src="base64.js"></script>
+<style type="text/css">
+			textarea {
+				width: 500px;
+				height: 100px;
+			}
+			#j {
+				height: 200px;
+			}
+		</style>
+<script type="text/javascript">
+			
+			function go()
+			{
+				var base64 = $("#b").val();
+				if (base64 == '')
+				{
+					$("#j").val('');
+					return;
+				}
+				var binary = Base64.decode(base64.substring(1));
+				console.log("binary", binary);
+				var uzip = pako.inflate(binary);
+				console.log("uzip", uzip);
+				var string = new TextDecoder("utf-8").decode(uzip);
+				console.log("string", string);
+				$("#j").val(JSON.stringify(JSON.parse(string), null, 4));
+			}
+			
+			function og()
+			{
+				var json = $("#j").val();
+				var string = json.replace(/\s/g, "");
+				console.log("string", string);
+				var enc = new TextEncoder("utf-8").encode(string);
+				console.log("enc", enc);
+				var zip = pako.deflate(enc, {level: 9});
+				console.log("zip", zip);
+				var base64 = Base64.encodeU(zip);
+				var bstring = "0" + base64;
+				$("#o").val(bstring);
+			}
+		</script>
+</head>
+<body>
+<h1>Factorio 0.15 blueprints decoder/encoder</h1>
+<p>Blueprint</p>
+<textarea id="b" placeholder="Paste blueprint string here"></textarea>
+<button onclick="go()">Decode</button>
+<p>Decoded Blueprint</p>
+<textarea id="j"></textarea>
+<button onclick="og()">Encode</button>
+<p>Encoded Blueprint</p>
+<textarea id="o"></textarea>
+</body>
+</html>

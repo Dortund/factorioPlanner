@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+	<title>Factorio Planner</title>
+	<script src="https://d3js.org/d3.v5.min.js"></script>
+	<style type="text/css">
+			#svgMap {
+				background-image: url("images/grid20x20.png");
+			}
+			.view {
+				fill: blue;
+			}
+		</style>
+</head>
+<body>
+
+<svg width="720" height="120" id="svgMap">
+	<g id="grouped">
+  <circle cx="40" cy="60" r="10"></circle>
+  <circle cx="80" cy="60" r="10"></circle>
+  <circle cx="120" cy="60" r="10"></circle>
+  </g>
+</svg>
+
+<svg width="720" height="120" class="svgGraph">
+  <circle cx="40" cy="60" r="10"></circle>
+</svg>
+
+</body>
+
+<script>
+var width = 501;
+var height = 501;
+var r = 20;
+
+//drawGrid();
+
+var drag = d3.drag()
+    .on("start", dragstarted)
+	.on("drag", dragged)
+	.on("end", dragended);
+
+var svg = d3.select("#svgMap")
+	.attr("width", width)
+	.attr("height", height)
+	
+var view = svg.append("rect")
+    .attr("class", "view")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("width", width)
+    .attr("height", height);
+
+svg.call(d3.zoom().on("zoom", function () {
+		view.attr("transform", d3.event.transform)
+		console.log("dragging/zooming view");
+	}))
+	
+	
+var circles = d3.select("#svgMap").selectAll("circle");
+circles.on("click", function() {
+  if (d3.event.defaultPrevented) {
+	console.log("Click Surpressed");
+	return; // click suppressed
+  }
+  console.log("clicked!");
+});
+drag(circles);
+
+
+function drawGrid() {
+	var data = []
+	for (var i = 0; i <= width; i++) {
+		if (i % r == 0)
+			data.push(i);
+	}
+	
+	d3.select(".svgMap").append("g").attr("class", "grid");
+	
+	d3.select(".grid")
+		.append("g")
+		.attr("class", "gridV")
+		.selectAll("line")
+		.data(data)
+		.enter().append("line")
+			.attr("x1", function(d) {return d;})
+			.attr("x2", function(d) {return d;})
+			.attr("y1", 0)
+			.attr("y2", height)
+			.attr("stroke-width", 1)
+			.attr("stroke", "black");
+			
+	d3.select(".grid")
+		.append("g")
+		.attr("class", "gridH")
+		.selectAll("line")
+		.data(data)
+		.enter().append("line")
+			.attr("x1", 0)
+			.attr("x2", width)
+			.attr("y1", function(d) {return d;})
+			.attr("y2", function(d) {return d;})
+			.attr("stroke-width", 1)
+			.attr("stroke", "black");
+}
+
+
+function dragstarted(d) {
+	var current = d3.select(this);
+	current.attr("stroke", "blue");
+}
+
+  function dragged(d) {
+	var x = Math.floor(d3.event.x / r) * r + 0.5 * r;
+	var y = Math.floor(d3.event.y / r) * r + 0.5 * r;
+	
+    d3.select(this)
+		.raise()
+		.attr("cx", Math.max(Math.min(x, width - 0.5 * r), 0 + 0.5 * r))
+		.attr("cy", Math.max(Math.min(y, height - 0.5 * r), 0 + 0.5 * r));
+  }
+
+  function dragended(d) {
+    d3.select(this).attr("stroke", null);
+  }
+
+</script>
+</html>

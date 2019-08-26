@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Zoom + Pan</title>
+<style>
+
+body {
+  position: relative;
+  width: 960px;
+}
+
+svg {
+  font: 10px sans-serif;
+  shape-rendering: crispEdges;
+}
+
+rect {
+  fill: #ddd;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #fff;
+}
+
+button {
+  position: absolute;
+  right: 30px;
+  top: 30px;
+}
+
+</style>
+<button>Reset</button>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script>
+
+var gridWidth = 20;
+
+var margin = {top: 10, right: 0, bottom: 10, left: 20},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var x = d3.scaleLinear()
+    .domain([0, Math.floor(width / gridWidth)])
+    .range([0, width]);
+
+var y = d3.scaleLinear()
+    .domain([0, Math.floor(height / gridWidth)])
+    .range([0, height]);
+
+var xAxis = d3.axisBottom()
+    .scale(x)
+	.ticks(Math.floor(width / gridWidth))
+    .tickSize(-height);
+
+var yAxis = d3.axisLeft()
+    .scale(y)
+    .ticks(Math.floor(height / gridWidth))
+    .tickSize(-width);
+
+var zoom = d3.zoom()
+    .scaleExtent([0.1, 10])
+    .on("zoom", zoomed);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+    .call(zoom);
+
+svg.append("rect")
+    .attr("width", width)
+    .attr("height", height);
+
+var gx = svg.append("g")
+			.attr("class", "x axis")
+			.attr("transform", "translate(0," + height + ")")
+			.call(xAxis);
+
+var gy = svg.append("g")
+			.attr("class", "y axis")
+			.call(yAxis);
+	
+svg.append("g")
+	.attr("id", "datagroup")
+	.append("circle")
+		.attr("cx", 10)
+		.attr("cy", 10)
+		.attr("r", 10);
+
+d3.select("button").on("click", reset);
+
+function zoomed() {
+	
+	gx.call(xAxis.scale(d3.event.transform.rescaleX(x)));
+	gy.call(yAxis.scale(d3.event.transform.rescaleY(y)));
+	svg.select("#datagroup").attr("transform", d3.event.transform);
+
+	var ticksX = Math.floor(xAxis.scale().domain()[1] - xAxis.scale().domain()[0]);
+	var ticksY = Math.floor(yAxis.scale().domain()[1] - yAxis.scale().domain()[0]);
+	
+	gx.call(xAxis.ticks(ticksX));
+	gy.call(yAxis.ticks(ticksY));
+	
+	gx.selectAll('text')
+		.attr('transform', 'translate(' + width / ticksX / 2 + ',0)');
+	gy.selectAll('text')
+		.attr('transform', 'translate(0,' + height / ticksY / 2 + ')');
+}
+
+function reset() {
+/*
+  d3.transition().duration(750).tween("zoom", function() {
+    var ix = d3.interpolate(xAxis.scale().domain(), [-width / 2, width / 2]),
+        iy = d3.interpolate(yAxis.scale().domain(), [-height / 2, height / 2]);
+		dataTransform = d3.interpolate(d3.zoomTransform(svg.select("#datagroup").node()), d3.zoomIdentity)
+    return function(t) {
+		svg.select(".x.axis").call(xAxis.scale(x.domain(ix(t))));
+		svg.select(".y.axis").call(yAxis.scale(y.domain(iy(t))));
+		d = dataTransform(t);
+		svg.select("#datagroup").attr("transform", "translate(" + d.x + "," + d.y + ") scale(" + d.k + ")");
+    };
+  });
+  */
+  svg.transition()
+      .duration(750)
+      .call(zoom.transform, d3.zoomIdentity);
+}
+
+</script>
