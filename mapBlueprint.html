@@ -236,17 +236,13 @@ function decode() {
 
 function encode()
 {
-	return;/*
-	var json = $("#j").val();
+	var json = d3.select("#txtBlueprint").property("value");
 	var string = json.replace(/\s/g, "");
-	console.log("string", string);
 	var enc = new TextEncoder("utf-8").encode(string);
-	console.log("enc", enc);
 	var zip = pako.deflate(enc, {level: 9});
-	console.log("zip", zip);
 	var base64 = Base64.encodeU(zip);
 	var bstring = "0" + base64;
-	$("#o").val(bstring);*/
+	d3.select("#txtEncBlueprint2").property("value", bstring);
 }
 </script>
 </body>
